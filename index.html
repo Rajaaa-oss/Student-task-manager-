@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Task Manager</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+}
+.container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 25px;
+}
+h1 { color: #4f46e5; }
+.subtitle { color: #64748b; }
+.panel {
+  background: white;
+  padding: 22px;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px #0000000c;
+}
+.entry {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0;
+}
+input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+}
+button {
+  padding: 11px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #4f46e5;
+  color: white;
+}
+ul { list-style: none; padding: 0; }
+li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+li span { flex: 1; overflow-wrap: anywhere; }
+li.done span {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+li button { background: #dc2626; }
+.stats {
+  display: flex;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 14px;
+}
+footer {
+  text-align: center;
+  margin-top: 24px;
+  color: #64748b;
+}
+@media(max-width:480px) {
+  .container { margin: 15px auto; padding: 15px; }
+  .entry { flex-wrap: wrap; }
+  .entry input { flex-basis: 65%; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>My Study Planner 📚</h1>
+  <p class="subtitle">Plan your day. Complete your goals.</p>
+
+  <div class="panel">
+    <h2>My Tasks</h2>
+    <div class="entry">
+      <input id="taskInput" placeholder="Enter a study task">
+      <button onclick="addTask()">Add Task +</button>
+    </div>
+    <div class="stats">
+      <span id="total">Total: 0</span>
+      <span id="completed">Completed: 0</span>
+    </div>
+    <ul id="taskList"></ul>
+    <p id="empty">No tasks yet. Add your first task!</p>
+  </div>
+  <footer>Small steps lead to big achievements ✨</footer>
+</div>
+
+<script>
+let tasks = JSON.parse(
+  localStorage.getItem("studyTasks") || "[]"
+);
+
+function saveTasks() {
+  localStorage.setItem("studyTasks", JSON.stringify(tasks));
+}
+
+function addTask() {
+  const input = document.getElementById("taskInput");
+  const name = input.value.trim();
+
+  if (!name) {
+    alert("Please enter a task!");
+    return;
+  }
+
+  tasks.push({ name: name, done: false });
+  input.value = "";
+  saveTasks();
+  renderTasks();
+}
+
+function toggleTask(index) {
+  tasks[index].done = !tasks[index].done;
+  saveTasks();
+  renderTasks();
+}
+
+function deleteTask(index) {
+  tasks.splice(index, 1);
+  saveTasks();
+  renderTasks();
+}
+
+function renderTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  tasks.forEach((task, index) => {
+    const item = document.createElement("li");
+    if (task.done) item.className = "done";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.done;
+    checkbox.style.flex = "0 0 auto";
+    checkbox.addEventListener("change", () => toggleTask(index));
+
+    const label = document.createElement("span");
+    label.textContent = task.name;
+
+    const remove = document.createElement("button");
+    remove.textContent = "Delete";
+    remove.addEventListener("click", () => deleteTask(index));
+
+    item.append(checkbox, label, remove);
+    list.appendChild(item);
+  });
+
+  document.getElementById("total").textContent =
+    "Total: " + tasks.length;
+
+  document.getElementById("completed").textContent =
+    "Completed: " + tasks.filter(t => t.done).length;
+
+  document.getElementById("empty").hidden = tasks.length > 0;
+}
+
+document.getElementById("taskInput").addEventListener(
+  "keydown",
+  event => {
+    if (event.key === "Enter") addTask();
+  }
+);
+
+renderTasks();
+</script>
+</body>
+</html>
